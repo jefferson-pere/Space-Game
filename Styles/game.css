@@ -41,7 +41,7 @@ header {
   margin: 0 auto;
   border-radius: 10%;
   transform: translateX(-50%);
-  animation: shortAnimation 500ms linear;
+  animation: shotAnimation 500ms linear;
   animation-fill-mode: forwards;
 }
 .specialShot {
@@ -55,6 +55,6 @@ header {
   margin: 0 auto;
   border-radius: 10%;
   transform: translateX(-50%);
-  animation: shortAnimation 500ms linear;
+  animation: shotAnimation 500ms linear;
   animation-fill-mode: forwards;
 }
