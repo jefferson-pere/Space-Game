@@ -27,7 +27,7 @@ function moveSpaceshipWithMouse(event) {
       spaceContainerHeight - spaceshipHeight,
       spaceContainerHeight - mouseY - spaceshipHeight / 2
     )
-  );
+  ); 
 
   // Atualizar a posição da nave
   spaceship.style.left = newLeft + "px";
