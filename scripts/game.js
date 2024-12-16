@@ -262,6 +262,7 @@ function collisionEnemiesWithSpaceship() {
         //especial shot
       } else {
         enemy.destroyEnemySpaceship();
+        setPlayerDamage(enemy.damage);
       }
     }
   });
@@ -339,6 +340,60 @@ function setPlayerScore(points) {
   score += points;
   playerScore.innerHTML = String(score).padStart(9, "0");
 }
+function setPlayerDamage(damage) {
+  const criticalDamage = Math.ceil(damage * (Math.random() + 1));
+
+  life -= criticalDamage;
+  playerLife.innerHTML = `Nave ${life < 0 ? 0 : life}%`;
+  if (life < 30) {
+    playerLife.style.color = "red";
+  }
+  const hitSound = new Audio("../audios/hit.mp3");
+  hitSound.volume = 0.8;
+  hitSound.play();
+
+  if (life < 0) {
+    gameOver();
+  }
+}
+
+function saveUserScore({ name, score }) {
+  const storageRank = JSON.parse(localStorage.getItem("@spaceshipgame:rank"));
+  if (storageRank) {
+    localStorage.setItem(
+      "@spaceshipgame:rank",
+      JSON.stringify([...storageRank, { name, score }])
+    );
+  } else {
+    localStorage.setItem(
+      "@spaceshipgame:rank",
+      JSON.stringify([{ name, score }])
+    );
+  }
+}
+function gameOver() {
+  isgameOver = true;
+  const gameOverElement = document.querySelector(".gameOver");
+  gameOverElement.style.display = "flex";
+
+  spaceship.style.backgroundImage = `url(../images/explosion2.gif)`;
+
+  explosionSound = new Audio("../audios/explosion2.mp3");
+  explosionSound.volume = 0.4;
+  explosionSound.play();
+
+  setTimeout(() => {
+    spaceship.remove();
+  }, 1000);
+
+  saveUserScore({ name: playerName.innerHTML, score });
+}
+
+function backPage() {
+  window.history.back();
+}
+const backButton = document.querySelector(".gameOver button");
+backButton.addEventListener("click", backPage);
 
 document.addEventListener("keydown", gameControls);
 document.addEventListener("keyup", gameControlsCancel);
