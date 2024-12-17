@@ -11,7 +11,7 @@ const spaceshipWidth = spaceship.offsetWidth;
 const spaceshipHeight = spaceship.offsetHeight;
 
 const spaceshipSpeed = 10; // velocidade (px) 10
-const shotSpeed = 1000; // tiro por segundo 10
+const shotSpeed = 10; // tiro por segundo 10
 const spaceshipDamage = 25; // dano nave 25
 const timeToEndSpecialShot = 30 * 1000; // especial 30s
 
@@ -37,6 +37,7 @@ let enemyY = 100;
 
 //mover
 function spaceshipMove() {
+  if (isgameOver) return;
   moveX += positionX * spaceshipSpeed;
   moveY += positionY * spaceshipSpeed;
 
@@ -65,7 +66,7 @@ function spaceshipMove() {
 }
 //tiro
 function createShot(className = "shot") {
-  if (canShot) {
+  if (canShot && !isgameOver) {
     const shot = document.createElement("div");
     shot.classList.add(className);
 
@@ -128,7 +129,7 @@ class EnemySpaceship {
     this.element.className = className;
 
     this.element.style.position = "absolute";
-    this.element.style.top = `${this.offscreenTopElementDiscount}px`; // -200px
+    this.element.style.top = `-${this.offscreenTopElementDiscount}px`; // -200px
 
     document.querySelector(".enemies").appendChild(this.element);
   }
@@ -163,6 +164,17 @@ class EnemySpaceship {
     }, 1000);
   }
 }
+
+class SpecialCharg extends EnemySpaceship {
+  constructor(enemyNumber, src, alt, className) {
+    super(enemyNumber, src, alt, className);
+  }
+  removeElement() {
+    enemies = enemies.filter((enemy) => enemy != this);
+    this.element.remove();
+  }
+}
+
 function createEnemies() {
   enemiesDifficultyLevel =
     score == 0 ? 1 : Math.ceil(score / pointsToIncrementDifficultyLevel);
@@ -182,8 +194,15 @@ function createEnemies() {
     } else if (randomEnemyType <= 95) {
       randomEnemyType = 3; //15%
     } else if (randomEnemyType <= 100) {
+      enemies.push(
+        new SpecialCharg(
+          1,
+          "../images/logo-rj.png",
+          "logo-rj",
+          "chargeSpecialShot"
+        )
+      ); //5%
       return;
-      //5%
     }
 
     enemies.push(
@@ -248,6 +267,7 @@ function collisionEnemiesWithSpaceship() {
     const enemy = enemies.find((enemy) => enemy.element == enemyDOM);
 
     if (!enemy) return;
+    // if (enemy.element.className == "chargeSpecialShot") return; // aivar destruição do especial
 
     const enemyRect = enemyDOM.getBoundingClientRect();
 
@@ -259,7 +279,18 @@ function collisionEnemiesWithSpaceship() {
       spaceshipRect.bottom - descountCollision * 2 > enemyRect.top
     ) {
       if (enemy.element.className == "chargeSpecialShot") {
-        //especial shot
+        const chargeSpecialShotSound = new Audio("../audios/next_level.mpg");
+        chargeSpecialShotSound.play();
+        specialShotIsActive = true;
+        shootPower = 100;
+
+        setPlayerScore(2000);
+        enemy.removeElement();
+
+        setTimeout(() => {
+          specialShotIsActive = false;
+          shootPower = 25;
+        }, 30 * 1000); // 30 segundo especial
       } else {
         enemy.destroyEnemySpaceship();
         setPlayerDamage(enemy.damage);
@@ -347,6 +378,7 @@ function setPlayerDamage(damage) {
   playerLife.innerHTML = `Nave ${life < 0 ? 0 : life}%`;
   if (life < 30) {
     playerLife.style.color = "red";
+    playerLife.style.animation = "blinkAnimation 1s infinite";
   }
   const hitSound = new Audio("../audios/hit.mp3");
   hitSound.volume = 0.8;
